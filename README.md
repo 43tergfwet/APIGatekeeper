@@ -1,1 +1,1 @@
-# APIGatekeeper
+APIGatekeeper is a Flask-based application designed to serve as the backend entry point, responsible for managing API gateways. It incorporates features to initialize the Flask app, set up essential routes for API management, and facilitate database connections, ensuring secure, efficient, and scalable API interaction.
