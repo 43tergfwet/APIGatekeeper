@@ -5,17 +5,28 @@ from functools import wraps
 from flask import Flask, request, jsonify, make_response
 from dotenv import load_dotenv
 load_dotenv()
+
 SECRET_KEY = os.getenv('SECRET_KEY')
+
 app = Flask(__name__)
+
 users_db = {
     "user1": {"password": "password123", "roles": ["admin"]},
     "user2": {"password": "pass456", "roles": ["user"]}
 }
+
 def check_user(username, password):
     user = users_db.get(username)
     if not user:
         return False
     return user["password"] == password
+
+def register_user(username, password):
+    if username in users_db:
+        return False, "User already exists."
+    users_db[username] = {"password": password, "roles": ["user"]}
+    return True, "User created successfully."
+
 def encode_auth_token(user_id):
     try:
         payload = {
@@ -26,6 +37,7 @@ def encode_auth_token(user_id):
         return jwt.encode(payload, SECRET_KEY, algorithm='HS256')
     except Exception as e:
         return e
+
 def decode_auth_token(auth_token):
     try:
         payload = jwt.decode(auth_token, SECRET_KEY, algorithms=['HS256'])
@@ -34,6 +46,7 @@ def decode_auth_token(auth_token):
         return 'Signature expired. Please log in again.'
     except jwt.InvalidTokenError:
         return 'Invalid token. Please log in again.'
+
 def token_required(f):
     @wraps(f)
     def decorated(*args, **kwargs):
@@ -52,6 +65,7 @@ def token_required(f):
             return jsonify({'message': 'Token is invalid!'}), 403
         return f(*args, **kwargs)
     return decorated
+
 def check_permission(required_role):
     def decorator(f):
         @wraps(f)
@@ -68,6 +82,7 @@ def check_permission(required_role):
             return f(*args, **kwargs)
         return decorated_function
     return decorator
+
 @app.route('/login', methods=['POST'])
 def login():
     data = request.get_json()
@@ -78,10 +93,23 @@ def login():
         return jsonify({'token': token})
     else:
         return make_response('Could not verify', 401, {'WWW-Authenticate': 'Basic realm="Login Required"'})
+
+@app.route('/register', methods=['POST'])
+def register():
+    data = request.get_json()
+    username = data.get('username')
+    password = data.get('password')
+    success, message = register_user(username, password)
+    if success:
+        return jsonify({'message': message})
+    else:
+        return jsonify({'message': message}), 400
+
 @app.route('/protected', methods=['GET'])
 @token_required
 @check_permission('admin')
 def protected():
     return jsonify({'message': 'This is only available for admins'})
+
 if __name__ == '__main__':
     app.run(debug=True)
