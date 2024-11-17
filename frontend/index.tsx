@@ -1,20 +1,22 @@
 import React from 'react';
 import ReactDOM from 'react-dom';
-import { BrowserRouter as Router, Route, Switch } from 'react-router-dom';
+import { BrowserRouter as AppRouter, Route, Switch } from 'react-router-dom';
 import axios from 'axios';
-import App from './App';
-import About from './About';
-import NotFound from './NotFound';
-axios.defaults.baseURL = process.env.REACT_APP_BACKEND_API_URL;
+import HomePage from './HomePage';
+import AboutPage from './AboutPage';
+import PageNotFound from './PageNotFound';
+
+axios.defaults.baseURL = process.env.REACT_APP_API_BASE_URL;
+
 ReactDOM.render(
   <React.StrictMode>
-    <Router>
+    <AppRouter>
       <Switch>
-        <Route exact path="/" component={App} />
-        <Route path="/about" component={About} />
-        <Route component={NotFound} />
+        <Route exact path="/" component={HomePage} />
+        <Route path="/about" component={AboutPage} />
+        <Route component={PageNotFound} />
       </Switch>
-    </Router>
+    </AppRouter>
   </React.StrictMode>,
   document.getElementById('root')
 );
