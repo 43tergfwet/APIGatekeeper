@@ -13,13 +13,13 @@ const GatewayDashboard: React.FC = () => {
     failedRequests: 0,
   });
 
-  const fetchMetrics = async () => {
+  const fetchMetrics = async (): Promise<void> => {
     try {
-      const response = await fetch(`${process.env.REACT_APP_METRICS_URL}/metrics`);
-      if (!response.ok) {
+      const data: GatewayMetrics = await (await fetch(`${process.env.REACT_APP_METRICS_URL}/metrics`)).json();
+      
+      if (!data) {
         throw new Error('Failed to fetch metrics');
       }
-      const data: GatewayMetrics = await response.json();
       setMetrics(data);
     } catch (error) {
       console.error('Error fetching gateway metrics:', error);
