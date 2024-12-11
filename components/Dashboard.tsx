@@ -6,36 +6,37 @@ interface GatewayMetrics {
   failedRequests: number;
 }
 
-const GatewayDashboard: React.FC = () => {
+const GatewayMetricsDashboard: React.FC = () => {
   const [metrics, setMetrics] = useState<GatewayMetrics>({
     totalRequests: 0,
     successfulRequests: 0,
     failedRequests: 0,
   });
 
-  const fetchMetrics = async (): Promise<void> => {
+  const fetchGatewayMetrics = async (): Promise<void> => {
     try {
-      const data: GatewayMetrics = await (await fetch(`${process.env.REACT_APP_METRICS_URL}/metrics`)).json();
+      const response = await fetch(`${process.env.REACT_APP_METRICS_URL}/metrics`);
+      const metricsData: GatewayMetrics = await response.json();
       
-      if (!data) {
-        throw new Error('Failed to fetch metrics');
+      if (!metricsData) {
+        throw new Error('Metrics fetch operation failed.');
       }
-      setMetrics(data);
+      setMetrics(metricsData);
     } catch (error) {
-      console.error('Error fetching gateway metrics:', error);
+      console.error('Error while fetching gateway metrics:', error);
     }
   };
 
   useEffect(() => {
-    fetchMetrics();
-    const interval = setInterval(fetchMetrics, 30000);
+    fetchGatewayMetrics();
+    const metricsRefreshInterval = setInterval(fetchGatewayMetrics, 30000);
 
-    return () => clearInterval(interval);
+    return () => clearInterval(metricsRefreshInterval);
   }, []);
 
   return (
     <div>
-      <h2>Gateway Dashboard</h2>
+      <h2>Gateway Metrics Dashboard</h2>
       <div>Total Requests: {metrics.totalRequests}</div>
       <div>Successful Requests: {metrics.successfulRequests}</div>
       <div>Failed Requests: {metrics.failedRequests}</div>
@@ -43,4 +44,4 @@ const GatewayDashboard: React.FC = () => {
   );
 };
 
-export default GatewayDashboard;
+export default GatewayMetricsDashboard;
